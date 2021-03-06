@@ -9,6 +9,12 @@
 
 ## How to run the app
 
+1. Clone this repo on a machine which has git installed
+
+    `https://github.com/Kenneth-Macharia/locust-visualizer.git`
+
+2. Inside the `locust-visualizer` directory download, open `index.html` in a brower
+
 ## Assumptions
 
 - The data JSON payload always has the 3 data points `wind direction`, `grid size`
