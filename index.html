@@ -20,14 +20,13 @@
                 </button>
             </div>
             <div class="display">
-                <div>
-                    <span v-show="showImpact">{{ yieldLoss }}</span>
+                <div class="yield-loss" v-show="showImpact">
+                    <span><strong>{{ yieldLoss }}</strong></span>
                 </div>
-                <div>
+                <div class="grid">
 
                 </div>
             </div>
-
         </div>
 
         <script src="https://unpkg.com/vue@next"></script>
