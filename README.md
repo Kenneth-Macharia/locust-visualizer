@@ -4,14 +4,15 @@
   overall farmland yield impact.
 - It collects json data informing farmlands with locust outbreak sightings and outputs:
 
-    1. An estimate percentage impact on framland yields
+    1. An estimate percentage on farmland yields loss
     2. A visualization of the impacted farms within the farmland
 
 ## How to run the app
 
 ## Assumptions
 
-- The JSON payloads always have the 3 object keys.
+- The data JSON payload always has the 3 data points `wind direction`, `grid size`
+  and `outbreak co-ordinates`.
 - Outbreaks on adjacent farms are treated as independent outbreaks i.e a neigbouring
   farm will be included in the yield loss estimate even if it is another outbreak site.
 - Sites outside the provided grid (whether an outbreak site or neighbour) will be excluded
