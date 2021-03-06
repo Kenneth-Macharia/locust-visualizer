@@ -10,3 +10,5 @@
 ## How to run the app
 
 ## Assumptions
+
+- The JSON payloads always have the 3 object keys.

@@ -1,0 +1,88 @@
+* {
+    /* box-sizing: border-box; */
+    /* margin: ; */
+    /* padding: 0; */
+    /* margin-top: 25px; */
+  }
+
+  html,
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+  }
+
+  #app {
+    width: 800px;
+    height: 90vh;
+    margin: auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid grey;
+    border-radius: 3px;
+  }
+
+  h1 {
+    margin-bottom: 2rem;
+    font-weight: normal;
+  }
+
+  /* img {
+    border-radius: 50%;
+    border: 5px #333 solid;
+    margin-bottom: 1rem;
+  } */
+
+  /* .male {
+    border-color: steelblue;
+    background-color: steelblue;
+  }
+
+  .female {
+    border-color: pink;
+    background-color: pink;
+    color: #333;
+  } */
+
+  input {
+      width: 600px;
+      height: 30px;
+      border: 2px solid #CED4DA;
+      border-radius: 3px;
+      font-size: 15px;
+      color: darkgray;
+      padding-left: 10px;
+  }
+
+  button {
+    margin-top: 2rem;
+    cursor: pointer;
+    display: inline-block;
+    background: #5b6369;
+    color: white;
+    font-size: 20px;
+    border: 0;
+    border-radius: 3px;
+    margin-left: 1.6rem;
+    padding: 0.7rem 1rem;
+  }
+
+  button:focus {
+    outline: none;
+  }
+
+  button:hover {
+    transform: scale(1.02);
+  }
+
+  .control {
+    margin-top: -1rem;
+  }
+
+  .display {
+      margin-top: 3rem;
+      width: 600px;
+      height: 400px;
+      border: 1px solid #CED4DA;
+  }

@@ -5,39 +5,33 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Locust Visualizer</title>
-        <!-- add favicons -->
-        <link rel="apple-touch-icon" sizes="180x180" href="assets/images/favicons/apple-touch-icon.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="assets/images/favicons/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="assets/images/favicons/favicon-16x16.png">
-        <link rel="manifest" href="assets/images/favicons/site.webmanifest">
-        <link rel="mask-icon" href="assets/images/favicons/safari-pinned-tab.svg" color="#1e1e1e">
-        <link rel="shortcut icon" href="assets/images/favicons/favicon.ico">
-        <meta name="msapplication-TileColor" content="#da532c">
-        <meta name="msapplication-config" content="assets/images/favicons/browserconfig.xml">
-        <meta name="theme-color" content="#ffffff">
-        <!-- import boostrap -->
-        <link rel="stylesheet"
-            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-            integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
-            crossorigin="anonymous">
-        <!-- import style sheets -->
-        <link rel="stylesheet" href="assets/css/styles.css">
-        <!-- import vue.js -->
-        <script src="https://unpkg.com/vue@next"></script>
+        <title>Visualizer</title>
+        <link rel="stylesheet" href="style.css">
     </head>
 
     <body>
-        <div class="container" id="app">
-            <h1>{{ heading }}</h1>
-            <p>{{ paragraph }}</p>
+        <div id="app">
+            <div class="control">
+                <h1>Locust Outbreak Simulator</h1>
+                <input v-model="requestURL" type="url"
+                placeholder="Enter data URL">
+                <button @click.prevent="getData()">
+                    Run Simulation
+                </button>
+            </div>
+            <div class="display">
+                <div>
+                    <span v-show="showImpact">{{ yieldLoss }}</span>
+                </div>
+                <div>
+
+                </div>
+            </div>
+
         </div>
-        <!-- import Vue app -->
-        <script src="main.js"></script>
-        <!-- mount Vue app -->
-        <script>
-            // mount inported Vue app into DOM element with id='app'
-            const mountedApp = app.mount('#app');
-        </script>
+
+        <script src="https://unpkg.com/vue@next"></script>
+        <script src="app.js"></script>
     </body>
+
 </html>
