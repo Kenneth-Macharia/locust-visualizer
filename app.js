@@ -5,7 +5,8 @@ const app = Vue.createApp({
         windDirection: '',
         farmCoords: [],
         farmSize: 0,
-        overallImpact: 0.0
+        overallImpact: 0.0,
+        showImpact: false,
       }
     },
 
@@ -18,32 +19,34 @@ const app = Vue.createApp({
             }
         })
         .then(response => response.json())
-        .then(dat => {
-            this.requestURL = ''
+        .then(data => {
 
-            data = {
-              "grid_width_and_length": 6,
-              "wind_direction": "SOUTH",
-              "confirmed_outbreaks": [{
-                  "x": 1,
-                  "y": 1
-                },
-                {
-                  "x": 4,
-                  "y": 3
-                }
-              ]
-            }
+          this.windDirection = data.wind_direction
+          this.farmSize = data.grid_width_and_length
+          this.farmCoords.push(...data.confirmed_outbreaks)
 
-            this.windDirection = data.wind_direction
-            this.farmSize = data.grid_width_and_length
-            this.farmCoords.push(...data.confirmed_outbreaks)
+          if (this.farmCoords.length !== 0) {
 
-            this.computeOverallImpact()
+            // remove duplicate / overlapping co-ordinates
+            this.farmCoords = Array.from(new Set(this.farmCoords.map(JSON.stringify))).map(
+            JSON.parse);
+
+            this.overallImpact = this.computeOverallImpact()
+            this.showImpact = true
+
+          } else {
+            this.overallImpact = 0
+            this.showImpact = true
+          }
         })
         .catch((error) => {
             alert(error);
         });
+
+        this.requestURL = '',
+        this.windDirection = '',
+        this.farmCoords = [],
+        this.farmSize = 0
       },
 
       computeOverallImpact() {
@@ -52,41 +55,46 @@ const app = Vue.createApp({
         let farmsImpactSum = 0.0
 
         for (c of this.farmCoords) {
-            if (this.windDirection === 'NORTH') {
-              farmsImpactSum += this.computeFarmImpact(c, 0)
+          // skip farms that are outside the specified grid
+          if ((c.x < 0) || (c.x > this.farmSize - 1) || (c.y < 0) || (c.y > this.farmSize - 1)) {
+            continue
+          }
 
-            } else if (this.windDirection === 'SOUTH') {
-              farmsImpactSum += this.computeFarmImpact(c, 1)
+          if (this.windDirection === 'NORTH') {
+            farmsImpactSum += this.computeFarmImpact(c, 0)
 
-            } else if (this.windDirection === 'EAST') {
-              farmsImpactSum += this.computeFarmImpact(c, 2)
+          } else if (this.windDirection === 'SOUTH') {
+            farmsImpactSum += this.computeFarmImpact(c, 1)
 
-            } else {
-              farmsImpactSum += this.computeFarmImpact(c, 3)
-            }
+          } else if (this.windDirection === 'EAST') {
+            farmsImpactSum += this.computeFarmImpact(c, 2)
+
+          } else {
+            farmsImpactSum += this.computeFarmImpact(c, 3)
+          }
         }
 
-        result = (farmsImpactSum/(this.farmSize*this.farmSize))*100
-        this.overallImpact = Math.round((result + Number.EPSILON) * 100) / 100
+        let result = (farmsImpactSum/(this.farmSize*this.farmSize))*100
+        return (Math.round((result + Number.EPSILON) * 100) / 100)
       },
 
-      computeFarmImpact(farmCoord, windDirection) {
+      computeFarmImpact(coord, windDirection) {
         // Takes an individual outbreak farm's coordinates and the wind direction and computes the impact on the farm plus valid surrounding neighbouring farms
 
         let neighbrs = []
         let impact = 0.0
 
         // check if there is a valid nothern neighbour
-        neighbrs.push((farmCoord.y - 1) >= 0 ? 1 : 0)
+        neighbrs.push((coord.y - 1) >= 0 ? 1 : 0)
 
         // check if there is a valid southern neighbour
-        neighbrs.push((farmCoord.y + 1) <= (this.farmSize - 1) ? 1 : 0)
+        neighbrs.push((coord.y + 1) <= (this.farmSize - 1) ? 1 : 0)
 
         // check if there is a valid eastern neighbour
-        neighbrs.push((farmCoord.x + 1) <= (this.farmSize - 1) ? 1 : 0)
+        neighbrs.push((coord.x + 1) <= (this.farmSize - 1) ? 1 : 0)
 
         // check if there is a valid western neighbour
-        neighbrs.push((farmCoord.x - 1) >= 0 ? 1 : 0)
+        neighbrs.push((coord.x - 1) >= 0 ? 1 : 0)
 
         // compute individual farm impact
         impact = 0.8 + (neighbrs[windDirection] === 1 ? 0.5 : 0)
@@ -105,10 +113,6 @@ const app = Vue.createApp({
       yieldLoss() {
         return `Overall impact is ${this.overallImpact}% yield loss.`
       },
-
-      showImpact() {
-        return this.overallImpact !== 0
-      }
     },
   })
 
