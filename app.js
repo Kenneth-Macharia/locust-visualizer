@@ -26,17 +26,23 @@ const app = Vue.createApp({
           this.farmCoords.push(...data.confirmed_outbreaks)
 
           if (this.farmCoords.length !== 0) {
+            let initLen = this.farmCoords.length
 
             // remove duplicate / overlapping co-ordinates
             this.farmCoords = Array.from(new Set(this.farmCoords.map(JSON.stringify))).map(
             JSON.parse);
 
+            if (initLen > this.farmCoords.length) {
+              alert('The data has overlapping outbreak coordinates which will be excluded in the yield loss computation')
+            }
+
+            // compute yield loss and render impact map
             this.overallImpact = this.computeOverallImpact()
-            this.showImpact = true
+            this.renderImpactMap()
 
           } else {
             this.overallImpact = 0
-            this.showImpact = true
+            this.renderImpactMap()
           }
         })
         .catch((error) => {
@@ -55,22 +61,40 @@ const app = Vue.createApp({
         let farmsImpactSum = 0.0
 
         for (c of this.farmCoords) {
-          // skip farms that are outside the specified grid
+
+          // exclude farms outside the specified grid
           if ((c.x < 0) || (c.x > this.farmSize - 1) || (c.y < 0) || (c.y > this.farmSize - 1)) {
+
+            alert(`{x:${c.x}, y:${c.y}} is outside the specified grid and will be excluded in the yield loss computation`)
+
+            // this.farmCoords = this.farmCoords.filter((v) => {
+            //   return ((v.x !== c.x && v.y !== c.y));
+            // })
+
             continue
           }
 
+          let res = []
+
           if (this.windDirection === 'NORTH') {
-            farmsImpactSum += this.computeFarmImpact(c, 0)
+            res = this.computeFarmImpact(c, 0)
+            farmsImpactSum += res[0]
+            c['n'] = res[1]
 
           } else if (this.windDirection === 'SOUTH') {
-            farmsImpactSum += this.computeFarmImpact(c, 1)
+            res = this.computeFarmImpact(c, 1)
+            farmsImpactSum += res[0]
+            c['n'] = res[1]
 
           } else if (this.windDirection === 'EAST') {
-            farmsImpactSum += this.computeFarmImpact(c, 2)
+            res = this.computeFarmImpact(c, 2)
+            farmsImpactSum += res[0]
+            c['n'] = res[1]
 
           } else {
-            farmsImpactSum += this.computeFarmImpact(c, 3)
+            res = this.computeFarmImpact(c, 3)
+            farmsImpactSum += res[0]
+            c['n'] = res[1]
           }
         }
 
@@ -78,11 +102,12 @@ const app = Vue.createApp({
         return (Math.round((result + Number.EPSILON) * 100) / 100)
       },
 
-      computeFarmImpact(coord, windDirection) {
+      computeFarmImpact(coord, windDir) {
         // Takes an individual outbreak farm's coordinates and the wind direction and computes the impact on the farm plus valid surrounding neighbouring farms
 
         let neighbrs = []
         let impact = 0.0
+        let downWind = 0
 
         // check if there is a valid nothern neighbour
         neighbrs.push((coord.y - 1) >= 0 ? 1 : 0)
@@ -97,21 +122,135 @@ const app = Vue.createApp({
         neighbrs.push((coord.x - 1) >= 0 ? 1 : 0)
 
         // compute individual farm impact
-        impact = 0.8 + (neighbrs[windDirection] === 1 ? 0.5 : 0)
-        neighbrs.splice(windDirection, 1)  // remove the down-wind farm
+        impact = 0.8 + (neighbrs[windDir] === 1 ? 0.5 : 0)
+        downWind = neighbrs.splice(windDir, 1)
+
         for (f of neighbrs) {
           if (f === 1) {
             impact += 0.25
           }
         }
 
-        return impact
+        // add a down-wind neibour marker if valid down-wind neighbour exists
+        neighbrs.splice(windDir, 0, downWind[0] === 1 ? 2 : 0)
+        return [impact, neighbrs]
+      },
+
+      renderImpactMap() {
+        let t = this.grid
+        let s = this.farmSize - 1
+        let c = this.farmCoords
+        let outBreakCells = []
+
+        for (y = 0; y <= s; y++) {
+          let row = t.insertRow(y)
+
+          for (x = 0; x<= s; x++) {
+            let cell = row.insertCell(x)
+
+            // for each cell created check if it an outbreak cell
+            let cellCheck = c.filter((v) => {
+              return ((v.x === x && v.y === y));
+            })
+
+            if (cellCheck.length > 0) {
+              outBreakCells.push(cellCheck[0])
+              cell.innerHTML = "80% Loss"
+              cell.setAttribute("class", "outbreak");
+            }
+          }
+        }
+
+        // process neighbours
+        for (oCell of outBreakCells) {
+          for (i = 0; i <= (oCell.n.length - 1); i++) {
+
+            let x = oCell.x
+            let y = oCell.y
+            let neighGrid = oCell.n
+            let ncell = null
+
+            if (i === 0) {
+                // northern neighbour
+              if (neighGrid[i] === 1) {
+                ncell = t.rows[y-1].cells[x]
+                if (ncell.getAttribute("class") !== "outbreak") {
+                  ncell.innerHTML = "25% Loss"
+                  ncell.setAttribute("class", "outbreak-2")
+                }
+
+              } else if (neighGrid[i] === 2) {
+                ncell = t.rows[y-1].cells[x]
+                if (ncell.getAttribute("class") !== "outbreak") {
+                  ncell.innerHTML = "50% Loss"
+                  ncell.setAttribute("class", "outbreak-1")
+                }
+              }
+
+            } else if (i === 1) {
+              // southern neighbour
+              if (neighGrid[i] === 1) {
+                ncell = t.rows[y+1].cells[x]
+                if (ncell.getAttribute("class") !== "outbreak") {
+                  ncell.innerHTML = "25% Loss"
+                  ncell.setAttribute("class", "outbreak-2")
+                }
+
+              } else if (neighGrid[i] === 2) {
+                ncell = t.rows[y+1].cells[x]
+                if (ncell.getAttribute("class") !== "outbreak") {
+                  ncell.innerHTML = "50% Loss"
+                  ncell.setAttribute("class", "outbreak-1")
+                }
+              }
+
+            } else if (i === 2) {
+              // eastern neighbour
+              if (neighGrid[i] === 1) {
+                ncell = t.rows[y].cells[x+1]
+                if (ncell.getAttribute("class") !== "outbreak") {
+                  ncell.innerHTML = "25% Loss"
+                  ncell.setAttribute("class", "outbreak-2")
+                }
+
+              } else if (neighGrid[i] === 2) {
+                ncell = t.rows[y].cells[x+1]
+                if (ncell.getAttribute("class") !== "outbreak") {
+                  ncell.innerHTML = "50% Loss"
+                  ncell.setAttribute("class", "outbreak-1")
+                }
+              }
+
+            } else {
+              // western neighbour
+              if (neighGrid[i] === 1) {
+                ncell = t.rows[y].cells[x-1]
+                if (ncell.getAttribute("class") !== "outbreak") {
+                  ncell.innerHTML = "25% Loss"
+                  ncell.setAttribute("class", "outbreak-2")
+                }
+
+              } else if (neighGrid[i] === 2) {
+                ncell = t.rows[y].cells[x-1]
+                if (ncell.getAttribute("class") !== "outbreak") {
+                  ncell.innerHTML = "50% Loss"
+                  ncell.setAttribute("class", "outbreak-1")
+                }
+              }
+            }
+          }
+        }
+        this.showImpact = true
       },
     },
 
     computed: {
       yieldLoss() {
-        return `Overall impact is ${this.overallImpact}% yield loss.`
+        return `Overall impact is ${this.overallImpact}% yield loss`
+      },
+
+      grid() {
+        return document.querySelector('#grid-table')
       },
     },
   })
