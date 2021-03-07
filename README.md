@@ -4,7 +4,7 @@
   overall farmland yield impact.
 - It collects json data informing farmlands with locust outbreak sightings and outputs:
 
-    1. An estimate percentage on farmland yields loss
+    1. A percentage farmland yields loss
     2. A visualization of the impacted farms within the farmland
 
 ## How to run the app
@@ -13,7 +13,7 @@
 
     `https://github.com/Kenneth-Macharia/locust-visualizer.git`
 
-2. Inside the `locust-visualizer` directory download, open `index.html` in a brower
+2. Inside the `locust-visualizer` directory, open `index.html` in a web browser
 
 ## Assumptions
 

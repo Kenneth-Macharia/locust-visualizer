@@ -7,6 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Visualizer</title>
         <link rel="stylesheet" href="style.css">
+
     </head>
 
     <body>
@@ -14,7 +15,7 @@
             <div class="control">
                 <h1>Locust Outbreak Simulator</h1>
                 <input v-model="requestURL" type="url"
-                placeholder="Enter data URL">
+                placeholder="Enter data URL" @focus="reset()">
                 <button @click.prevent="getData()">
                     Run Simulation
                 </button>
@@ -23,12 +24,15 @@
                 <div class="yield-loss" v-show="showImpact">
                     <span><strong>{{ yieldLoss }}</strong></span>
                 </div>
-                <div class="grid">
+                <div class="grid" v-show="showImpact">
+                    <table id="grid-table">
 
+                    </table>
                 </div>
             </div>
         </div>
 
+        <!-- import VueJS -->
         <script src="https://unpkg.com/vue@next"></script>
         <script src="app.js"></script>
     </body>

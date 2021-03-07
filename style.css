@@ -1,10 +1,11 @@
   html,
   body {
     font-family: Arial, Helvetica, sans-serif;
+    background-color: #f0f1f1;
   }
 
   #app {
-    width: 800px;
+    width: 700px;
     height: 90vh;
     margin: 40px auto;
     text-align: center;
@@ -35,13 +36,12 @@
     margin-top: 2rem;
     cursor: pointer;
     display: inline-block;
-    background: #5b6369;
+    background: #385499;
     color: white;
     font-size: 20px;
     border: 0;
     border-radius: 3px;
-    margin-left: 1.6rem;
-    padding: 0.7rem 1rem;
+    padding: 0.5rem 1rem;
   }
 
   button:focus {
@@ -53,19 +53,17 @@
   }
 
   .control {
-    margin-top: -1rem;
+    margin-top: -1.5rem;
   }
 
   .display {
-      margin-top: 3rem;
+      margin-top: 2rem;
       width: 600px;
-      height: 400px;
-      border: 1px solid #CED4DA;
+      height: 470px;
   }
 
   .yield-loss {
-    margin: 13px auto;
-    border: 1px, solid #CCE5FF;
+    margin: 10px auto;
     border-radius: 3px;
     background-color:#CCE5FF;
     width: 300px;
@@ -74,8 +72,41 @@
   }
 
   .grid {
-    margin-top: 1rem;
-    width: 600px;
-    height: 335px;
-    border: 1px solid #CED4DA;
+    margin: 1rem auto;
+    width: 400px;
+    height: 400px;
+  }
+
+  #canvas {
+    border:2px solid #000000;
+    background-color: white;
+    margin-top: 1.5rem;
+  }
+
+  table {
+    width: 400px;
+    height: 400px;
+    background-color:#FFFFFF;
+    table-layout: fixed;
+  }
+
+  table, tr, td {
+    border: 1px solid gray;
+    border-collapse: collapse;
+  }
+
+  tr {
+    font-size: 10px;
+  }
+
+  .outbreak {
+    background-color: #F50D02;
+  }
+
+  .outbreak-1 {
+    background-color: #FDD966;
+  }
+
+  .outbreak-2 {
+    background-color: #FCE5CD;
   }

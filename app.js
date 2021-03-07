@@ -11,16 +11,40 @@ const app = Vue.createApp({
     },
 
     methods: {
+      reset() {
+        // reset globals when input gets focus
+        this.requestURL = '',
+        this.windDirection = '',
+        this.farmCoords = [],
+        this.farmSize = 0,
+        this.overallImpact = 0.0,
+        this.showImpact = false,
+        this.yieldLoss = ''
+
+        // delete the currently rendered grid
+        let table = this.grid.querySelector("tbody")
+        rows = table.rows.length
+        for (var i = (rows - 1); i >= 0; i--) {
+          table.deleteRow(i);
+        }
+      },
+
       getData() {
+        if (this.requestURL.length === 0) {
+          alert("URL can't be blank")
+          return
+        }
+
         fetch(this.requestURL, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
         })
         .then(response => response.json())
         .then(data => {
 
+          // populate globals
           this.windDirection = data.wind_direction
           this.farmSize = data.grid_width_and_length
           this.farmCoords.push(...data.confirmed_outbreaks)
@@ -45,14 +69,9 @@ const app = Vue.createApp({
             this.renderImpactMap()
           }
         })
-        .catch((error) => {
-            alert(error);
+        .catch(() => {
+            alert('Data fetch failed, please confirm the URL provided');
         });
-
-        this.requestURL = '',
-        this.windDirection = '',
-        this.farmCoords = [],
-        this.farmSize = 0
       },
 
       computeOverallImpact() {
@@ -66,11 +85,6 @@ const app = Vue.createApp({
           if ((c.x < 0) || (c.x > this.farmSize - 1) || (c.y < 0) || (c.y > this.farmSize - 1)) {
 
             alert(`{x:${c.x}, y:${c.y}} is outside the specified grid and will be excluded in the yield loss computation`)
-
-            // this.farmCoords = this.farmCoords.filter((v) => {
-            //   return ((v.x !== c.x && v.y !== c.y));
-            // })
-
             continue
           }
 
@@ -99,12 +113,17 @@ const app = Vue.createApp({
         }
 
         let result = (farmsImpactSum/(this.farmSize*this.farmSize))*100
+
+        // round result to 2 decimal places
         return (Math.round((result + Number.EPSILON) * 100) / 100)
       },
 
       computeFarmImpact(coord, windDir) {
         // Takes an individual outbreak farm's coordinates and the wind direction and computes the impact on the farm plus valid surrounding neighbouring farms
 
+        // represent neigbours on either wind direction in the form [1, 0, 2, 1] where 1 is a valid neighbour away from the wind, 2 is a valid neigbour downwind and 0 no neigbour.
+
+        // index 0 element in the above array is always the north neighbour, 1 is the southern, 2 the eastern and 3 the western.
         let neighbrs = []
         let impact = 0.0
         let downWind = 0
@@ -123,6 +142,8 @@ const app = Vue.createApp({
 
         // compute individual farm impact
         impact = 0.8 + (neighbrs[windDir] === 1 ? 0.5 : 0)
+
+        // remove down-wind to collectively compute the other neighbours
         downWind = neighbrs.splice(windDir, 1)
 
         for (f of neighbrs) {
@@ -131,13 +152,13 @@ const app = Vue.createApp({
           }
         }
 
-        // add a down-wind neibour marker if valid down-wind neighbour exists
+        // add a back down-wind neibour marker if valid down-wind neighbour exists
         neighbrs.splice(windDir, 0, downWind[0] === 1 ? 2 : 0)
         return [impact, neighbrs]
       },
 
       renderImpactMap() {
-        let t = this.grid
+        let t = this.grid  //table element
         let s = this.farmSize - 1
         let c = this.farmCoords
         let outBreakCells = []
@@ -153,6 +174,7 @@ const app = Vue.createApp({
               return ((v.x === x && v.y === y));
             })
 
+            // if current cell is an outbreak cell, save it and label it on the grid
             if (cellCheck.length > 0) {
               outBreakCells.push(cellCheck[0])
               cell.innerHTML = "80% Loss"
@@ -161,7 +183,7 @@ const app = Vue.createApp({
           }
         }
 
-        // process neighbours
+        // process neighbours of the saved outbreak cells
         for (oCell of outBreakCells) {
           for (i = 0; i <= (oCell.n.length - 1); i++) {
 
@@ -171,8 +193,9 @@ const app = Vue.createApp({
             let ncell = null
 
             if (i === 0) {
-                // northern neighbour
+                // compute location and label valid northern neighbour
               if (neighGrid[i] === 1) {
+                // 25% impact neighbrs
                 ncell = t.rows[y-1].cells[x]
                 if (ncell.getAttribute("class") !== "outbreak") {
                   ncell.innerHTML = "25% Loss"
@@ -180,6 +203,7 @@ const app = Vue.createApp({
                 }
 
               } else if (neighGrid[i] === 2) {
+                // 50% neighbr
                 ncell = t.rows[y-1].cells[x]
                 if (ncell.getAttribute("class") !== "outbreak") {
                   ncell.innerHTML = "50% Loss"
@@ -188,8 +212,9 @@ const app = Vue.createApp({
               }
 
             } else if (i === 1) {
-              // southern neighbour
+              // compute location and label southern neighbour
               if (neighGrid[i] === 1) {
+                // 25% impact neighbr
                 ncell = t.rows[y+1].cells[x]
                 if (ncell.getAttribute("class") !== "outbreak") {
                   ncell.innerHTML = "25% Loss"
@@ -197,6 +222,7 @@ const app = Vue.createApp({
                 }
 
               } else if (neighGrid[i] === 2) {
+                // 50% neighbr
                 ncell = t.rows[y+1].cells[x]
                 if (ncell.getAttribute("class") !== "outbreak") {
                   ncell.innerHTML = "50% Loss"
@@ -205,8 +231,9 @@ const app = Vue.createApp({
               }
 
             } else if (i === 2) {
-              // eastern neighbour
+              // compute location and label eastern neighbour
               if (neighGrid[i] === 1) {
+                // 25% impact neighbr
                 ncell = t.rows[y].cells[x+1]
                 if (ncell.getAttribute("class") !== "outbreak") {
                   ncell.innerHTML = "25% Loss"
@@ -214,6 +241,7 @@ const app = Vue.createApp({
                 }
 
               } else if (neighGrid[i] === 2) {
+                // 50% neighbr
                 ncell = t.rows[y].cells[x+1]
                 if (ncell.getAttribute("class") !== "outbreak") {
                   ncell.innerHTML = "50% Loss"
@@ -222,8 +250,9 @@ const app = Vue.createApp({
               }
 
             } else {
-              // western neighbour
+              // compute location and label western neighbour
               if (neighGrid[i] === 1) {
+                // 25% impact neighbr
                 ncell = t.rows[y].cells[x-1]
                 if (ncell.getAttribute("class") !== "outbreak") {
                   ncell.innerHTML = "25% Loss"
@@ -231,6 +260,7 @@ const app = Vue.createApp({
                 }
 
               } else if (neighGrid[i] === 2) {
+                // 50% neighbr
                 ncell = t.rows[y].cells[x-1]
                 if (ncell.getAttribute("class") !== "outbreak") {
                   ncell.innerHTML = "50% Loss"
