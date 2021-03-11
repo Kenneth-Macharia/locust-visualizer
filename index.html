@@ -16,7 +16,8 @@
                 <h1>Locust Outbreak Simulator</h1>
                 <input v-model="requestURL" type="url"
                 placeholder="Enter data URL" @focus="reset()">
-                <button @click.prevent="getData()">
+                <button @click.prevent="getData()"
+                :disabled="showImpact === true">
                     Run Simulation
                 </button>
             </div>
