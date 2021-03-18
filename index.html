@@ -7,17 +7,16 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Visualizer</title>
         <link rel="stylesheet" href="style.css">
-
     </head>
 
     <body>
         <div id="app">
             <div class="control">
                 <h1>Locust Outbreak Simulator</h1>
-                <input v-model="requestURL" type="url"
-                placeholder="Enter data URL" @focus="reset()">
+                <input type="url" placeholder="Enter data URL"
+                    v-model="requestURL" @focus="reset()">
                 <button @click.prevent="getData()"
-                :disabled="showImpact === true">
+                    :disabled="showImpact === true">
                     Run Simulation
                 </button>
             </div>
@@ -26,9 +25,7 @@
                     <span><strong>{{ yieldLoss }}</strong></span>
                 </div>
                 <div class="grid" v-show="showImpact">
-                    <table id="grid-table">
-
-                    </table>
+                    <table id="grid-table"></table>
                 </div>
             </div>
         </div>

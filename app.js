@@ -10,6 +10,16 @@ const app = Vue.createApp({
       }
     },
 
+    computed: {
+      yieldLoss() {
+        return `Overall impact is ${this.overallImpact}% yield loss`
+      },
+
+      grid() {
+        return document.querySelector('#grid-table')
+      },
+    },
+
     methods: {
       reset() {
         // reset globals when input gets focus
@@ -24,7 +34,7 @@ const app = Vue.createApp({
         // delete the currently rendered grid
         let table = this.grid.querySelector("tbody")
         rows = table.rows.length
-        for (var i = (rows - 1); i >= 0; i--) {
+        for (let i = (rows - 1); i >= 0; i--) {
           table.deleteRow(i);
         }
       },
@@ -90,24 +100,33 @@ const app = Vue.createApp({
 
           let res = []
 
+          // for each farm compute impact based on wind direction and generate an array of valid neighbours that will be added as an additional data point
           if (this.windDirection === 'NORTH') {
             res = this.computeFarmImpact(c, 0)
             farmsImpactSum += res[0]
+
+            // add valid neighbour array
             c['n'] = res[1]
 
           } else if (this.windDirection === 'SOUTH') {
             res = this.computeFarmImpact(c, 1)
             farmsImpactSum += res[0]
+
+            // add valid neighbour array
             c['n'] = res[1]
 
           } else if (this.windDirection === 'EAST') {
             res = this.computeFarmImpact(c, 2)
             farmsImpactSum += res[0]
+
+            // add valid neighbour array
             c['n'] = res[1]
 
           } else {
             res = this.computeFarmImpact(c, 3)
             farmsImpactSum += res[0]
+
+            // add valid neighbour array
             c['n'] = res[1]
           }
         }
@@ -158,7 +177,7 @@ const app = Vue.createApp({
       },
 
       renderImpactMap() {
-        let t = this.grid  //table element
+        let t = this.grid  //table DOM element
         let s = this.farmSize - 1
         let c = this.farmCoords
         let outBreakCells = []
@@ -272,17 +291,7 @@ const app = Vue.createApp({
         }
         this.showImpact = true
       },
-    },
-
-    computed: {
-      yieldLoss() {
-        return `Overall impact is ${this.overallImpact}% yield loss`
-      },
-
-      grid() {
-        return document.querySelector('#grid-table')
-      },
-    },
+    }
   })
 
   app.mount('#app')
